@@ -10,7 +10,7 @@ include = ["beeref*"]
 
 [project]
 name = "BeeRef"
-version = "0.3.4-dev"
+version = "0.3.4-alpha1"
 description = "A simple reference image viewer"
 readme = "README.rst"
 license = {file = "LICENSE"}
