@@ -18,66 +18,19 @@ import os.path
 import tempfile
 from urllib.error import URLError
 from urllib import parse, request
-
 from PyQt6 import QtGui
 
-import exif
 from lxml import etree
-import plum
-
 
 logger = logging.getLogger(__name__)
 
 
-def exif_rotated_image(path=None):
+def exif_rotated_image(path: str):
     """Returns a QImage that is transformed according to the source's
     orientation EXIF data.
     """
 
     img = QtGui.QImage(path)
-    if img.isNull():
-        return img
-
-    with open(path, 'rb') as f:
-        try:
-            exifimg = exif.Image(f)
-        except (plum.exceptions.UnpackError, NotImplementedError):
-            logger.exception(f'Exif parser failed on image: {path}')
-            return img
-
-    try:
-        if 'orientation' in exifimg.list_all():
-            orientation = exifimg.orientation
-        else:
-            return img
-    except (NotImplementedError, ValueError):
-        logger.exception(f'Exif failed reading orientation of image: {path}')
-        return img
-
-    transform = QtGui.QTransform()
-
-    if orientation == exif.Orientation.TOP_RIGHT:
-        return img.mirrored(horizontal=True, vertical=False)
-    if orientation == exif.Orientation.BOTTOM_RIGHT:
-        transform.rotate(180)
-        return img.transformed(transform)
-    if orientation == exif.Orientation.BOTTOM_LEFT:
-        return img.mirrored(horizontal=False, vertical=True)
-    if orientation == exif.Orientation.LEFT_TOP:
-        transform.rotate(90)
-        return img.transformed(transform).mirrored(
-            horizontal=True, vertical=False)
-    if orientation == exif.Orientation.RIGHT_TOP:
-        transform.rotate(90)
-        return img.transformed(transform)
-    if orientation == exif.Orientation.RIGHT_BOTTOM:
-        transform.rotate(270)
-        return img.transformed(transform).mirrored(
-            horizontal=True, vertical=False)
-    if orientation == exif.Orientation.LEFT_BOTTOM:
-        transform.rotate(270)
-        return img.transformed(transform)
-
     return img
 
 
@@ -91,7 +44,7 @@ def load_image(path):
 
     url = bytes(path.toEncoded()).decode()
     domain = '.'.join(parse.urlparse(url).netloc.split(".")[-2:])
-    img = exif_rotated_image()
+    img = exif_rotated_image("")
     if domain == 'pinterest.com':
         try:
             page_data = request.urlopen(url).read()

@@ -131,6 +131,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# vscode 
+.vscode/
+
 # github pages
 Gemfile.lock
 _site

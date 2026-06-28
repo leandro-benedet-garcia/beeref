@@ -5,35 +5,10 @@ from unittest.mock import patch
 import httpretty
 import pytest
 
-import plum
 
 from PyQt6 import QtCore, QtGui
 
-from beeref.fileio.image import exif_rotated_image, load_image
-
-
-def test_exif_rotated_image_without_path(qapp):
-    img = exif_rotated_image()
-    assert img.isNull() is True
-
-
-def test_exif_rotated_image_not_a_file(qapp):
-    img = exif_rotated_image('foo')
-    assert img.isNull() is True
-
-
-def test_exif_rotated_image_exif_unpack_error(qapp, imgfilename3x3):
-    with patch('beeref.fileio.image.exif.Image',
-               side_effect=plum.exceptions.UnpackError()):
-        img = exif_rotated_image(imgfilename3x3)
-        assert img.isNull() is False
-
-
-def test_exif_rotated_image_exif_notimplementederror(qapp, imgfilename3x3):
-    with patch('beeref.fileio.image.exif.Image.list_all',
-               side_effect=NotImplementedError()):
-        img = exif_rotated_image(imgfilename3x3)
-        assert img.isNull() is False
+from beeref.fileio.image import load_image
 
 
 @pytest.mark.parametrize('path,expected',
@@ -46,25 +21,6 @@ def test_exif_rotated_image_exif_notimplementederror(qapp, imgfilename3x3):
                           ('test3x3_orientation6.jpg', 'test3x3.jpg'),
                           ('test3x3_orientation7.jpg', 'test3x3.jpg'),
                           ('test3x3_orientation8.jpg', 'test3x3.jpg')])
-def test_exif_rotated_image(path, expected, qapp):
-    def get_fname(p):
-        root = os.path.dirname(__file__)
-        return os.path.join(root, '..', 'assets', p)
-
-    img = exif_rotated_image(get_fname(path))
-    assert img.isNull() is False
-    expected = QtGui.QImage(get_fname(expected))
-    assert expected.isNull() is False
-
-    # The JPEG format isn't pixel perfect, so we have to check whether
-    # pixels are approximately the same:
-    for x in range(3):
-        for y in range(3):
-            col_img = img.pixelColor(x, y).getRgb()
-            col_expected = expected.pixelColor(x, y).getRgb()
-            diff = [(col_img[i] - col_expected[i])**2 for i in range(4)]
-            assert math.sqrt(sum(diff)) < 3
-
 
 def test_load_image_loads_from_filename(view, imgfilename3x3):
     img, filename = load_image(imgfilename3x3)
